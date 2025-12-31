@@ -1,1 +1,89 @@
-import { readdirSync, statSync } from 'fs';\nimport { resolve, relative } from 'path';\n\ninterface StructureOptions {\n  depth?: string | number;\n  json?: boolean;\n}\n\ninterface DirNode {\n  name: string;\n  type: 'file' | 'directory';\n  children?: DirNode[];\n  size?: number;\n}\n\nexport async function checkFileStructure(path?: string, options: StructureOptions = {}) {\n  const targetPath = path ? resolve(path) : process.cwd();\n  const maxDepth = typeof options.depth === 'string' ? parseInt(options.depth) : options.depth ?? 3;\n\n  try {\n    const structure = buildStructure(targetPath, 0, maxDepth);\n\n    if (options.json) {\n      console.log(JSON.stringify(structure, null, 2));\n    } else {\n      console.log(`\\n📁 Directory Structure of ${targetPath}:\\n`);\n      printTree(structure, '');\n      console.log();\n    }\n  } catch (error) {\n    console.error('Error reading directory structure:', error);\n    process.exit(1);\n  }\n}\n\nfunction buildStructure(path: string, currentDepth: number, maxDepth: number): DirNode {\n  const stat = statSync(path);\n  const name = path.split('/').pop() || path;\n  const node: DirNode = {\n    name,\n    type: stat.isDirectory() ? 'directory' : 'file',\n    size: stat.size,\n  };\n\n  if (stat.isDirectory() && currentDepth < maxDepth) {\n    try {\n      const entries = readdirSync(path)\n        .filter((entry) => !entry.startsWith('.'))\n        .slice(0, 20); // Limit to 20 entries per directory\n\n      node.children = entries.map((entry) => buildStructure(resolve(path, entry), currentDepth + 1, maxDepth));\n    } catch (error) {\n      // Permission denied or other read errors\n    }\n  }\n\n  return node;\n}\n\nfunction printTree(node: DirNode, prefix: string, isLast: boolean = true): void {\n  const connector = isLast ? '└── ' : '├── ';\n  const type = node.type === 'directory' ? '📁' : '📄';\n  console.log(`${prefix}${connector}${type} ${node.name}`);\n\n  if (node.children && node.children.length > 0) {\n    const newPrefix = prefix + (isLast ? '    ' : '│   ');\n    node.children.forEach((child, index) => {\n      printTree(child, newPrefix, index === node.children!.length - 1);\n    });\n  }\n}
+import { defineCommand, option } from "@bunli/core";
+import { readdirSync, statSync } from "fs";
+import { resolve } from "path";
+import { z } from "zod";
+
+interface DirNode {
+  name: string;
+  type: "file" | "directory";
+  children?: DirNode[];
+}
+
+export default defineCommand({
+  name: "structure",
+  description: "Show directory structure",
+  options: {
+    path: option(z.string().optional(), {
+      description: "Directory path to analyze",
+      short: "p",
+    }),
+    depth: option(z.coerce.number().default(3), {
+      description: "Maximum traversal depth",
+      short: "d",
+    }),
+    json: option(z.coerce.boolean().default(false), {
+      description: "Output as JSON",
+    }),
+  },
+  handler: async ({ flags }) => {
+    const targetPath = flags.path ? resolve(flags.path) : process.cwd();
+    const maxDepth = flags.depth;
+
+    try {
+      const structure = buildStructure(targetPath, 0, maxDepth);
+
+      if (flags.json) {
+        console.log(JSON.stringify(structure, null, 2));
+      } else {
+        console.log(`\nDirectory Structure: ${targetPath}\n`);
+        printTree(structure, "");
+        console.log();
+      }
+    } catch (error) {
+      console.error("Error reading directory:", error);
+      process.exit(1);
+    }
+  },
+});
+
+function buildStructure(
+  path: string,
+  currentDepth: number,
+  maxDepth: number
+): DirNode {
+  const stat = statSync(path);
+  const name = path.split("/").pop() || path;
+  const node: DirNode = {
+    name,
+    type: stat.isDirectory() ? "directory" : "file",
+  };
+
+  if (stat.isDirectory() && currentDepth < maxDepth) {
+    try {
+      const entries = readdirSync(path)
+        .filter((entry) => !entry.startsWith("."))
+        .slice(0, 20);
+
+      node.children = entries.map((entry) =>
+        buildStructure(resolve(path, entry), currentDepth + 1, maxDepth)
+      );
+    } catch {
+      // Permission denied or other read errors
+    }
+  }
+
+  return node;
+}
+
+function printTree(node: DirNode, prefix: string, isLast = true): void {
+  const connector = isLast ? "└── " : "├── ";
+  const type = node.type === "directory" ? "[DIR] " : "[FILE]";
+  console.log(`${prefix}${connector}${type}${node.name}`);
+
+  if (node.children && node.children.length > 0) {
+    const newPrefix = prefix + (isLast ? "    " : "│   ");
+    node.children.forEach((child, index) => {
+      printTree(child, newPrefix, index === node.children!.length - 1);
+    });
+  }
+}
