@@ -1,1 +1,12 @@
-# Dependencies\nnode_modules/\npackage-lock.json\nyarn.lock\nbun.lockb\n\n# Production\ndist/\nbuild/\n\n# Environment\n.env\n.env.local\n.env.*.local\n\n# IDE\n.vscode/\n.idea/\n*.swp\n*.swo\n*.swn\n.DS_Store\n\n# Logs\nlogs/\n*.log\nnpm-debug.log*\nyarn-debug.log*\nyarn-error.log*\n\n# Cache\n.cache/\n.turbo/
+node_modules/
+dist/
+.bunli/
+*.log
+.env
+.env.local
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+bun.lockb
