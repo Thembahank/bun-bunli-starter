@@ -1,1 +1,11 @@
-import { checkSystemFiles } from './commands/check';\n\nconsole.log('🚀 Bun Bunli Starter - System File Checker');\nconsole.log('─'.repeat(50));\n\n// Example usage\nawait checkSystemFiles(process.cwd(), { verbose: true });\n\nconsole.log('\\nTo use the CLI, run:');\nconsole.log('  bun run src/cli.ts check');\nconsole.log('  bun run src/cli.ts check --verbose');\nconsole.log('  bun run src/cli.ts structure');
+#!/usr/bin/env bun
+
+import { createCLI } from "@bunli/core";
+
+const cli = createCLI({
+  name: "syschk",
+  version: "1.0.0",
+  description: "System file checker CLI",
+});
+
+cli.run();
