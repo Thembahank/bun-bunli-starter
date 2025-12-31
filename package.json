@@ -1,0 +1,30 @@
+{
+  "name": "bun-bunli-starter",
+  "version": "1.0.0",
+  "description": "A Bunli CLI starter for checking system files",
+  "type": "module",
+  "bin": {
+    "syschk": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "bunli dev",
+    "build": "bunli build",
+    "build:all": "bunli build --all",
+    "test": "bun test",
+    "start": "bun run src/index.ts"
+  },
+  "dependencies": {
+    "@bunli/core": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "zod": "latest"
+  },
+  "keywords": [
+    "bun",
+    "bunli",
+    "cli",
+    "system",
+    "file-checker"
+  ]
+}
