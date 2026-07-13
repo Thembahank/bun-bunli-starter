@@ -1,0 +1,29 @@
+# tc-secure security review CI
+#
+# Generated for: Node.js (npm) (detected at connect time)
+# Repository secrets are auto-provisioned by tc-secure at connect time:
+#   TC_ADMIN_BASE_URL, SERVICE_API_KEY, CLIENT_NAME
+name: tc-secure security review
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  security-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        continue-on-error: true
+        run: npm ci || npm install
+      - name: Run tc-secure controls
+        env:
+          TC_ADMIN_BASE_URL: ${{ secrets.TC_ADMIN_BASE_URL }}
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+          CLIENT_NAME: ${{ secrets.CLIENT_NAME }}
+        run: npx --yes tc-scanner@0.5.0 controls . --ci-provider github
