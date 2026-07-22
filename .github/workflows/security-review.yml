@@ -26,4 +26,4 @@ jobs:
           TC_ADMIN_BASE_URL: ${{ secrets.TC_ADMIN_BASE_URL }}
           SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
           CLIENT_NAME: ${{ secrets.CLIENT_NAME }}
-        run: npx --yes tc-scanner@0.5.0 controls . --ci-provider github
+        run: npx --yes tc-scanner@0.6.0 controls . --ci-provider github
